@@ -1,12 +1,9 @@
-from os import environ
 from flask import Flask
 from connection import Connection
-
-uri = environ["CLOUDS_URI"]
-user = environ["CLOUDS_USER"]
-password = environ["CLOUDS_PASSWORD"]
+from employee import show_employee
 
 app = Flask(__name__)
+app.register_blueprint(show_employee, url_prefix='')
 
 app.config.update(
     DEBUG=True,
@@ -15,14 +12,24 @@ app.config.update(
 
 @app.route("/")
 def index():
-    connection = Connection(uri, user, password)
-    out =  "<p>"
-    out += str(connection.find_employees_by_name("Maciej", "Bardas")) + " "
-    out += str(connection.check_if_exists(card_id=1)) + " "
-    out += str(connection.next_card_id()) + " "
-    out += str(connection.list_all())
+    db = Connection()
+    """"
+    connection.add_employee({
+    "card_id":connection.next_card_id(),
+    "first":"Alan",
+    "last":"Novak",
+    "title":"Marketing Manager Worldwide",
+    "nation":"German",
+    "born":1967,
+    "start":2007
+    })
+    """
+    out = "<p>"
+    out += str(db.list_all())
     out += "</p>"
-    connection.close()
+    out += "<p>"
+    out += str(db.list_subordinates(1))
+    out += "</p>"
     return out
 
 if __name__ == '__main__':

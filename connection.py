@@ -1,17 +1,23 @@
 from neo4j import GraphDatabase
-import logging
-from neo4j.exceptions import ServiceUnavailable
+from os import environ
 
 ##################################
-#      NEO4J CONNECTION       #
+#        NEO4J CONNECTION        #
 ##################################
+
+uri = environ["CLOUDS_URI"]
+user = environ["CLOUDS_USER"]
+password = environ["CLOUDS_PASSWORD"]
 
 class Connection:
 
-    def __init__(self, uri, user, password):
+    def __init__(self, uri=uri, user=user, password=password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     def close(self):
+        self.driver.close()
+    
+    def __del__(self):
         self.driver.close()
 
     @staticmethod
@@ -21,37 +27,41 @@ class Connection:
             ans.append(dict(row))
         return ans
 
-    def create_relation(self, person1_name, person2_name):
+    ##################################
+    #        MANAGE RELATIONS        #
+    ##################################
+    def add_relation(self, boss_id, emp_id):
         with self.driver.session() as session:
-            # Write transactions allow the driver to handle retries and transient errors
-            result = session.write_transaction(
-                self._create_and_return_friendship, person1_name, person2_name)
-            for row in result:
-                print("Created friendship between: {p1}, {p2}".format(p1=row['p1'], p2=row['p2']))
+            session.read_transaction(self._create_relation, boss_id, emp_id)
 
     @staticmethod
-    def _create_and_return_friendship(tx, person1_name, person2_name):
-        # To learn more about the Cypher syntax, see https://neo4j.com/docs/cypher-manual/current/
-        # The Reference Card is also a good resource for keywords https://neo4j.com/docs/cypher-refcard/current/
+    def _create_relation(tx, boss_id, emp_id):
         query = (
-            "CREATE (p1:Person { name: $person1_name }) "
-            "CREATE (p2:Person { name: $person2_name }) "
-            "CREATE (p1)-[:KNOWS]->(p2) "
-            "RETURN p1, p2"
+            "MATCH (b:Employee { card_id: $boss_id }) "
+            "MATCH (e:Employee { card_id: $emp_id }) "
+            "CREATE (e)-[:IS_SUBJECT_TO]->(b) "
         )
-        result = tx.run(query, person1_name=person1_name, person2_name=person2_name)
-        try:
-            return [{"p1": row["p1"]["name"], "p2": row["p2"]["name"]}
-                    for row in result]
-        # Capture any errors along with the query and data for traceability
-        except ServiceUnavailable as exception:
-            logging.error("{query} raised an error: \n {exception}".format(
-                query=query, exception=exception))
-            raise
+        tx.run(query, boss_id=boss_id, emp_id=emp_id)
 
+    def remove_relation(self, boss_id, emp_id):
+        with self.driver.session() as session:
+            session.read_transaction(self._delete_relation, boss_id, emp_id)
+
+    @staticmethod
+    def _delete_relation(tx, boss_id, emp_id):
+        query = (
+            "MATCH (b:Employee { card_id: $boss_id }) "
+            "MATCH (e:Employee { card_id: $emp_id }) "
+            "DELETE (e)-[:IS_SUBJECT_TO]->(b) "
+        )
+        tx.run(query, boss_id=boss_id, emp_id=emp_id)
+
+    ##################################
+    #      ADD AND DELETE NODE       #
+    ##################################
     def add_employee(self, properties : dict):
         with self.driver.session() as session:
-            return session.read_transaction(self._create_employee, properties)
+            session.read_transaction(self._create_employee, properties)
 
     @staticmethod
     def _create_employee(tx, p : dict):
@@ -66,26 +76,41 @@ class Connection:
             "job_started:$start "
             "})"
         )
-        result = tx.run(query, id=p.get("card_id"), 
-                               first=p.get("first"), 
-                               last=p.get("last"),
-                               year=p.get("born"),
-                               title=p.get("title"),
-                               nation=p.get("nation"),
-                               start=p.get("start"))
+        tx.run(query, id=p.get("card_id"), 
+                      first=p.get("first"), 
+                      last=p.get("last"),
+                      year=p.get("born"),
+                      title=p.get("title"),
+                      nation=p.get("nation"),
+                      start=p.get("start"))
 
     def remove_employee(self, card_id):
         with self.driver.session() as session:
-            return session.read_transaction(self._remove_employee_by_id, card_id)
+            session.read_transaction(self._remove_employee_by_id, card_id)
 
     @staticmethod
     def _remove_employee_by_id(tx, card_id):
         query = (
             "MATCH (e:Employee {card_id: $id}) "
-            "DELETE e"
+            "DETACH DELETE e"
         )
-        result = tx.run(query, id=card_id)
+        tx.run(query, id=card_id)
 
+    def change_title(self, card_id, title):
+        with self.driver.session() as session:
+            session.read_transaction(self._set_title, card_id, title)
+
+    @staticmethod
+    def _set_title(tx, card_id, title):
+        query = (
+            "MATCH (e:Employee {card_id: $id}) "
+            "SET e.title=$title"
+        )
+        tx.run(query, id=card_id, title=title)
+
+    ##################################
+    #          SELECT NODES          #
+    ##################################
     def list_all(self):
         with self.driver.session() as session:
             return session.read_transaction(self._return_all_employees)
@@ -106,11 +131,23 @@ class Connection:
     @staticmethod
     def _return_employees_by_name(tx, emp_firstname, emp_lastname):
         query = (
-            "MATCH (e:Employee) "
-            "WHERE e.firstname = $emp_first AND e.lastname = $emp_last "
+            "MATCH (e:Employee {firstname: $emp_first, lastname:$emp_last}) "
             "RETURN properties(e) AS prop"
         )
         result = tx.run(query, emp_first=emp_firstname, emp_last=emp_lastname)
+        return [row["prop"] for row in result]
+
+    def find_employee_by_id(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_employee_by_id, card_id)
+
+    @staticmethod
+    def _return_employee_by_id(tx, card_id):
+        query = (
+            "MATCH (e:Employee {card_id: $card_id}) "
+            "RETURN properties(e) AS prop"
+        )
+        result = tx.run(query, card_id=card_id)
         return [row["prop"] for row in result]
 
     def check_if_exists(self, card_id):
@@ -141,3 +178,45 @@ class Connection:
         result = tx.run(query)
         result = Connection.__make_dict(result)
         return result[0]["max_id"]
+
+    def list_supervisors(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_supervisors, card_id)
+    
+    @staticmethod
+    def _return_supervisors(tx, card_id):
+        query = (
+            "MATCH (e:Employee { card_id:$card_id })-[:IS_SUBJECT_TO *1]->(b: Employee) "
+            "RETURN b.card_id AS id, b.firstname AS first, b.lastname AS last"
+        )
+        result = tx.run(query, card_id=card_id)
+        result = Connection.__make_dict(result)
+        return result
+
+    def list_subordinates(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_subordinates, card_id)
+    
+    @staticmethod
+    def _return_subordinates(tx, card_id):
+        query = (
+            "MATCH (s:Employee)-[:IS_SUBJECT_TO *1..]->(e: Employee { card_id:$card_id }) "
+            "RETURN s.card_id AS id, s.firstname AS first, s.lastname AS last"
+        )
+        result = tx.run(query, card_id=card_id)
+        result = Connection.__make_dict(result)
+        return result
+
+    def list_direct_subordinates(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_direct_subordinates, card_id)
+
+    @staticmethod
+    def _return_direct_subordinates(tx, card_id):
+        query = (
+            "MATCH (s:Employee)-[:IS_SUBJECT_TO *1..1]->(e: Employee { card_id:$card_id }) "
+            "RETURN s.card_id, s.firstname, s.lastname"
+        )
+        result = tx.run(query, card_id=card_id)
+        result = Connection.__make_dict(result)
+        return result
