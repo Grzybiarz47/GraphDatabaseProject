@@ -74,6 +74,31 @@ class Connection:
                                nation=p.get("nation"),
                                start=p.get("start"))
 
+    def remove_employee(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._remove_employee_by_id, card_id)
+
+    @staticmethod
+    def _remove_employee_by_id(tx, card_id):
+        query = (
+            "MATCH (e:Employee {card_id: $id}) "
+            "DELETE e"
+        )
+        result = tx.run(query, id=card_id)
+
+    def list_all(self):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_all_employees)
+    
+    @staticmethod
+    def _return_all_employees(tx):
+        query = (
+            "MATCH (e:Employee) "
+            "RETURN properties(e) AS prop"
+        )
+        result = tx.run(query)
+        return [row["prop"] for row in result]
+
     def find_employees_by_name(self, emp_firstname, emp_lastname):
         with self.driver.session() as session:
             return session.read_transaction(self._return_employees_by_name, emp_firstname, emp_lastname)
@@ -87,18 +112,6 @@ class Connection:
         )
         result = tx.run(query, emp_first=emp_firstname, emp_last=emp_lastname)
         return [row["prop"] for row in result]
-
-    def remove_employee(self, card_id):
-        with self.driver.session() as session:
-            return session.read_transaction(self._remove_employee_by_id, card_id)
-
-    @staticmethod
-    def _remove_employee_by_id(tx, card_id):
-        query = (
-            "MATCH (e:Employee {card_id: $id}) "
-            "DELETE e"
-        )
-        result = tx.run(query, id=card_id)
 
     def check_if_exists(self, card_id):
          with self.driver.session() as session:

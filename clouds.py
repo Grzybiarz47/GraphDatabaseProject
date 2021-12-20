@@ -20,6 +20,7 @@ def index():
     out += str(connection.find_employees_by_name("Maciej", "Bardas")) + " "
     out += str(connection.check_if_exists(card_id=1)) + " "
     out += str(connection.next_card_id()) + " "
+    out += str(connection.list_all())
     out += "</p>"
     connection.close()
     return out
