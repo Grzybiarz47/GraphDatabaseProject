@@ -12,10 +12,16 @@ class Connection:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     def close(self):
-        # Don't forget to close the driver connection when you are finished with it
         self.driver.close()
 
-    def create_friendship(self, person1_name, person2_name):
+    @staticmethod
+    def __make_dict(result):
+        ans = []
+        for row in result:
+            ans.append(dict(row))
+        return ans
+
+    def create_relation(self, person1_name, person2_name):
         with self.driver.session() as session:
             # Write transactions allow the driver to handle retries and transient errors
             result = session.write_transaction(
@@ -43,20 +49,82 @@ class Connection:
                 query=query, exception=exception))
             raise
 
-    def find_person(self, person_name):
-        str = "Not found"
+    def add_employee(self, properties : dict):
         with self.driver.session() as session:
-            result = session.read_transaction(self._find_and_return_person, person_name)
-            for row in result:
-                str = "Found person: {row}".format(row=row)
-        return str
+            return session.read_transaction(self._create_employee, properties)
 
     @staticmethod
-    def _find_and_return_person(tx, person_name):
+    def _create_employee(tx, p : dict):
         query = (
-            "MATCH (p:Person) "
-            "WHERE p.name = $person_name "
-            "RETURN p.name AS name"
+            "CREATE (n:Employee { "
+            "card_id:$id, "
+            "firstname:$first, "
+            "lastname:$last, "
+            "born:$year, "
+            "title:$title, "
+            "nationality:$nation, "
+            "job_started:$start "
+            "})"
         )
-        result = tx.run(query, person_name=person_name)
-        return [row["name"] for row in result]
+        result = tx.run(query, id=p.get("card_id"), 
+                               first=p.get("first"), 
+                               last=p.get("last"),
+                               year=p.get("born"),
+                               title=p.get("title"),
+                               nation=p.get("nation"),
+                               start=p.get("start"))
+
+    def find_employees_by_name(self, emp_firstname, emp_lastname):
+        with self.driver.session() as session:
+            return session.read_transaction(self._return_employees_by_name, emp_firstname, emp_lastname)
+
+    @staticmethod
+    def _return_employees_by_name(tx, emp_firstname, emp_lastname):
+        query = (
+            "MATCH (e:Employee) "
+            "WHERE e.firstname = $emp_first AND e.lastname = $emp_last "
+            "RETURN properties(e) AS prop"
+        )
+        result = tx.run(query, emp_first=emp_firstname, emp_last=emp_lastname)
+        return [row["prop"] for row in result]
+
+    def remove_employee(self, card_id):
+        with self.driver.session() as session:
+            return session.read_transaction(self._remove_employee_by_id, card_id)
+
+    @staticmethod
+    def _remove_employee_by_id(tx, card_id):
+        query = (
+            "MATCH (e:Employee {card_id: $id}) "
+            "DELETE e"
+        )
+        result = tx.run(query, id=card_id)
+
+    def check_if_exists(self, card_id):
+         with self.driver.session() as session:
+            return session.read_transaction(self._count_employees, card_id) > 0
+
+    @staticmethod
+    def _count_employees(tx, card_id):
+        query = (
+            "MATCH (e:Employee) "
+            "WHERE e.card_id=$id "
+            "RETURN count(*) AS count"
+        )
+        result = tx.run(query, id=card_id)
+        result = Connection.__make_dict(result)
+        return result[0]["count"]
+
+    def next_card_id(self):
+        with self.driver.session() as session:
+            return session.read_transaction(self._max_id) + 1
+
+    @staticmethod
+    def _max_id(tx):
+        query = (
+            "MATCH (e:Employee) "
+            "RETURN max(e.card_id) AS max_id"
+        )
+        result = tx.run(query)
+        result = Connection.__make_dict(result)
+        return result[0]["max_id"]

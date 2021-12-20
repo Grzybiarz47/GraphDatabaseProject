@@ -16,10 +16,13 @@ app.config.update(
 @app.route("/")
 def index():
     connection = Connection(uri, user, password)
-    str = connection.find_person("Keanu Reeves")
+    out =  "<p>"
+    out += str(connection.find_employees_by_name("Maciej", "Bardas")) + " "
+    out += str(connection.check_if_exists(card_id=1)) + " "
+    out += str(connection.next_card_id()) + " "
+    out += "</p>"
     connection.close()
-    str = "<p>" + str + "</p>"
-    return str
+    return out
 
 if __name__ == '__main__':
     app.run(debug=True)
