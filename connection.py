@@ -186,8 +186,8 @@ class Connection:
     @staticmethod
     def _return_supervisors(tx, card_id):
         query = (
-            "MATCH (e:Employee { card_id:$card_id })-[:IS_SUBJECT_TO *1]->(b: Employee) "
-            "RETURN b.card_id AS id, b.firstname AS first, b.lastname AS last"
+            "MATCH (e:Employee { card_id:$card_id })-[:IS_SUBJECT_TO *1..]->(b: Employee) "
+            "RETURN b.card_id AS id, b.firstname AS first, b.lastname AS last, b.title AS title"
         )
         result = tx.run(query, card_id=card_id)
         result = Connection.__make_dict(result)
@@ -201,7 +201,7 @@ class Connection:
     def _return_subordinates(tx, card_id):
         query = (
             "MATCH (s:Employee)-[:IS_SUBJECT_TO *1..]->(e: Employee { card_id:$card_id }) "
-            "RETURN s.card_id AS id, s.firstname AS first, s.lastname AS last"
+            "RETURN s.card_id AS id, s.firstname AS first, s.lastname AS last, s.title AS title"
         )
         result = tx.run(query, card_id=card_id)
         result = Connection.__make_dict(result)
@@ -215,7 +215,7 @@ class Connection:
     def _return_direct_subordinates(tx, card_id):
         query = (
             "MATCH (s:Employee)-[:IS_SUBJECT_TO *1..1]->(e: Employee { card_id:$card_id }) "
-            "RETURN s.card_id, s.firstname, s.lastname"
+            "RETURN s.card_id AS id, s.firstname AS first, s.lastname AS last, s.title AS title"
         )
         result = tx.run(query, card_id=card_id)
         result = Connection.__make_dict(result)

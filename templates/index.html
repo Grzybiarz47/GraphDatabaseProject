@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <div class="search">
+        <h1>Wyszukaj pracownika</h1>
+        <form action="/employee" method="POST">
+            Imię<input type="search" id="findNameEmp" name="findNameEmp">
+            Nazwisko<input type="search" id="findSurnameEmp" name="findSurnameEmp">
+            <input type="submit" value="Szukaj">
+        </form>
+    </div>
+    <div>
+        <h1>Wypisz wszystkich pracowników</h1>
+        <button name="list_all" id="list_all" onclick="toListAll()">Szukaj</button>
+    </div>
+    {% if info %}
+        <div class="info">
+            <p>{{info}}</p>
+        </div>
+    {% endif %}
+{% endblock %}

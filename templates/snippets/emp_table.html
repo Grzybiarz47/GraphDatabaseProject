@@ -1,0 +1,45 @@
+<div class="emp">
+    <p><a href="/employee/{{emp.card_id}}">{{emp.firstname + ' ' + emp.lastname}}</a></p>
+    <table>
+        <tr>
+            <th>Stanowisko</th>
+            <th>{{emp.title}}</th>
+        </tr>
+        <tr>
+            <th>Nr karty</th>
+            <th>{{emp.card_id}}</th>
+        </tr>
+        <tr>
+            <th>Rok urodzenia</th>
+            <th>{{emp.born}}</th>
+        </tr>
+        <tr>
+            <th>Początek pracy</th>
+            <th>{{emp.job_started}}</th>
+        </tr>
+        <tr>
+            <th>Narodowość</th>
+            <th>{{emp.nationality}}</th>
+        </tr>
+    </table>
+    {% if supervisors and supervisors != [] %}
+        <table>
+            <tr><th>Przełożeni</th></tr>
+            {% for sup in supervisors %}
+                <tr><th>
+                    <a href="/employee/{{sup.id}}">{{sup.first + ' ' + sup.last + ' ' + sup.title}}</a>
+                </th></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    {% if subordinates and subordinates != [] %}
+        <table>
+            <tr><th>Podwładni</th></tr>
+            {% for sub in subordinates %}
+                <tr><th>
+                    <a href="/employee/{{sub.id}}">{{sub.first + ' ' + sub.last + ' ' + sub.title}}</a>
+                </th></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</div>

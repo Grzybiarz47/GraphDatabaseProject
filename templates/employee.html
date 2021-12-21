@@ -1,0 +1,7 @@
+{% extends 'index.html' %}
+
+{% block body %}
+    {% for emp in employees %}
+        {% include "snippets/emp_table.html" %}
+    {% endfor %}
+{% endblock %}

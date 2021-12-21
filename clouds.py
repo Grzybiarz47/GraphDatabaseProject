@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from connection import Connection
 from employee import show_employee
 
@@ -11,6 +11,7 @@ app.config.update(
 )
 
 @app.route("/")
+@app.route("/index")
 def index():
     db = Connection()
     """"
@@ -24,13 +25,7 @@ def index():
     "start":2007
     })
     """
-    out = "<p>"
-    out += str(db.list_all())
-    out += "</p>"
-    out += "<p>"
-    out += str(db.list_subordinates(1))
-    out += "</p>"
-    return out
+    return render_template("index.html")
 
 if __name__ == '__main__':
     app.run(debug=True)

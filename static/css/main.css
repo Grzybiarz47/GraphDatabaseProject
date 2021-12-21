@@ -1,0 +1,47 @@
+body{
+    background-color: cyan;
+}
+h1, h2, h3, p, textarea{
+    margin-left: 10px;
+}
+p{
+    font-size: large;
+    font-weight: bold;
+}
+/*divs*/
+div{
+    background-color: white;
+    border: 2px solid maroon;
+    height: 120px;
+    margin: 20px;
+    padding: 20px;
+    float: left;
+    text-align: center;
+}
+div.emp, div.info{
+    clear: both;
+    width: 60%;
+    height: auto;
+}
+/*tables*/
+table, td, th{
+    background-color: white;
+    border: 2px solid black;
+    text-align: center;
+    padding: 5px;
+}
+table{
+    width: 33%;
+    border-collapse: collapse;
+    margin: auto;
+    margin-top: 10px; 
+    display:inline-table
+}
+/*input*/
+button, input[type=text], [type=email], [type=password], [type=search], [type=submit], [type=number]{
+    margin: 10px;
+    padding: 5px;
+}
+textarea{
+    margin-top: 10px;
+}
