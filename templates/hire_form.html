@@ -1,0 +1,25 @@
+{% extends 'index.html' %}
+
+{% block body %}
+    <div class="hire">
+        <h3>Dodaj pracownika</h3>
+        <form action="/hire" method="POST">
+            <p>Imię*<input type="text" id="first" name="first"></p>
+            <p>Nazwisko*<input type="text" id="last" name="last"></p>
+            <p>Stanowisko*<input type="text" id="title" name="title"></p>
+            <p>Rok urodzenia<input type="number" id="born" name="born"></p>
+            <p>Początek pracy<input type="number" id="start" name="start"></p>
+            <p>Narodowość<input type="text" id="nation" name="nation"></p>
+            <p>
+                Wybierz przełożonego*
+                <input list="brow" id="boss" name="boss">
+                <datalist id="brow">
+                    {% for emp in selection %}
+                        <option value="{{emp}}">
+                    {% endfor %}
+                </datalist> 
+            </p>
+            <p></p><input type="submit" value="Dodaj">
+        </form>
+    </div>
+{% endblock %}

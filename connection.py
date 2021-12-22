@@ -119,7 +119,8 @@ class Connection:
     def _return_all_employees(tx):
         query = (
             "MATCH (e:Employee) "
-            "RETURN properties(e) AS prop"
+            "RETURN properties(e) AS prop "
+            "ORDER BY e.lastname, e.firstname, e.card_id"
         )
         result = tx.run(query)
         return [row["prop"] for row in result]

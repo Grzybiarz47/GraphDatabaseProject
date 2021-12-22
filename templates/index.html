@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <div class="search">
-        <h1>Wyszukaj pracownika</h1>
+    <div>
+        <h3>Wyszukaj pracownika</h3>
         <form action="/employee" method="POST">
-            Imię<input type="search" id="findNameEmp" name="findNameEmp">
-            Nazwisko<input type="search" id="findSurnameEmp" name="findSurnameEmp">
+            Imię<input type="search" id="findNameEmp" name="findNameEmp"><br>
+            Nazwisko<input type="search" id="findSurnameEmp" name="findSurnameEmp"><br>
             <input type="submit" value="Szukaj">
         </form>
     </div>
     <div>
-        <h1>Wypisz wszystkich pracowników</h1>
+        <h3>Wypisz wszystkich pracowników</h3>
         <button name="list_all" id="list_all" onclick="toListAll()">Szukaj</button>
+    </div>
+    <div>
+        <h3>Zatrudnij pracownika</h3>
+        <button name="add_emp" id="add_emp" onclick="toAddNewEmp()">Wybierz</button>
     </div>
     {% if info %}
         <div class="info">
