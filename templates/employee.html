@@ -4,4 +4,7 @@
     {% for emp in employees %}
         {% include "snippets/emp_table.html" %}
     {% endfor %}
+    {% if emp_id %}
+        {% include "snippets/emp_panel.html" %}   
+    {% endif %}
 {% endblock %}

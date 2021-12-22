@@ -1,0 +1,32 @@
+{% extends 'index.html' %}
+
+{% block body %}
+    <div class="edit">
+        {% if edit_title == "BOSS" %}
+            <form action="/employee/{{emp_id}}" method="POST">
+                <p>
+                    Wybierz nowego przełożonego
+                    <input list="brow" id="boss" name="boss">
+                    <datalist id="brow">
+                        {% for emp in selection %}
+                            <option value="{{emp}}">
+                        {% endfor %}
+                    </datalist>
+                </p>
+                <p></p><input type="submit" value="Akceptuj">
+            </form>
+        {% elif edit_title == "TITLE" %}
+            <form action="javascript:putMethod({{emp_id}})">
+                <p>Wpisz nazwę nowego stanowiska</p>
+                <p>Nazwa stanowiska<input type="text" id="title" name="title"></p>
+                <p></p><input type="submit" value="Akceptuj">
+            </form>
+        {% elif edit_title == "REM" %}
+            <form action="/employee/{{emp_id}}" method="DELETE">
+                <p>Czy na pewno chcesz zwolnić pracownika?</p>
+                <p></p><input type="submit" name="yes" value="Tak">
+                <p></p><input type="submit" name="no" value="Nie">
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

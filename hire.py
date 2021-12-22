@@ -19,9 +19,10 @@ def hire():
         boss = request.form.get("boss")
 
         if new_employee.get("first") and new_employee.get("last") and new_employee.get("title") and boss:
-            boss = boss.split(' ')[3]
+            boss_id = int(boss.split(' ')[3])
             new_employee["card_id"] = db.next_card_id()
-            
+            db.add_employee(new_employee)
+            db.add_relation(boss_id, new_employee.get("card_id"))
             return render_template('index.html', info="Dodano nowego pracownika")
 
         else:
