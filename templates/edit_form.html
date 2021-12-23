@@ -6,7 +6,7 @@
             <form action="/employee/{{emp_id}}" method="POST">
                 <p>
                     Wybierz nowego przełożonego
-                    <input list="brow" id="boss" name="boss">
+                    <input list="brow" id="boss" name="boss" autocomplete="off">
                     <datalist id="brow">
                         {% for emp in selection %}
                             <option value="{{emp}}">
@@ -22,11 +22,9 @@
                 <p></p><input type="submit" value="Akceptuj">
             </form>
         {% elif edit_title == "REM" %}
-            <form action="/employee/{{emp_id}}" method="DELETE">
-                <p>Czy na pewno chcesz zwolnić pracownika?</p>
-                <p></p><input type="submit" name="yes" value="Tak">
-                <p></p><input type="submit" name="no" value="Nie">
-            </form>
+            <p>Czy na pewno chcesz zwolnić pracownika?</p>
+            <p><input type="submit" name="yes" id="yes" onclick="deleteMethod({{emp_id}}, true)" value="Tak">
+            <input type="submit" name="no" id="no" onclick="deleteMethod({{emp_id}}, false)" value="Nie"></p>
         {% endif %}
     </div>
 {% endblock %}

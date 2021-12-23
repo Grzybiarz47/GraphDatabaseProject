@@ -50,9 +50,8 @@ class Connection:
     @staticmethod
     def _delete_relation(tx, boss_id, emp_id):
         query = (
-            "MATCH (b:Employee { card_id: $boss_id }) "
-            "MATCH (e:Employee { card_id: $emp_id }) "
-            "DELETE (e)-[:IS_SUBJECT_TO]->(b) "
+            "MATCH (e:Employee { card_id: $emp_id })-[r:IS_SUBJECT_TO]->(b:Employee { card_id: $boss_id }) "
+            "DELETE r "
         )
         tx.run(query, boss_id=boss_id, emp_id=emp_id)
 

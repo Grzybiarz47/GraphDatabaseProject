@@ -34,7 +34,7 @@
     {% endif %}
     {% if subordinates and subordinates != [] %}
         <table>
-            <tr><th>Podwładni</th></tr>
+            <tr><th>Bezpośredni podwładni</th></tr>
             {% for sub in subordinates %}
                 <tr><th>
                     <a href="/employee/{{sub.id}}">{{sub.first + ' ' + sub.last + ' ' + sub.title}}</a>

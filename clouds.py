@@ -7,15 +7,10 @@ app = Flask(__name__)
 app.register_blueprint(show_employee, url_prefix='')
 app.register_blueprint(add_employee, url_prefix='')
 
-app.config.update(
-    DEBUG=True,
-    TEMPLATES_AUTO_RELOAD=True
-)
-
 @app.route("/")
 @app.route("/index")
 def index():
     return render_template("index.html")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

@@ -12,7 +12,7 @@
             <p>Narodowość<input type="text" id="nation" name="nation"></p>
             <p>
                 Wybierz przełożonego*
-                <input list="brow" id="boss" name="boss">
+                <input list="brow" id="boss" name="boss" autocomplete="off">
                 <datalist id="brow">
                     {% for emp in selection %}
                         <option value="{{emp}}">

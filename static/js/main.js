@@ -16,6 +16,7 @@ function toAddNewEmp(){
 function putMethod(emp_id){
     url = "/employee/" + emp_id.toString()
     title = document.getElementById("title").value
+
     fetch(url, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
@@ -24,4 +25,19 @@ function putMethod(emp_id){
         .then(data => console.log(data));
 
     window.location.href = url
+}
+function deleteMethod(emp_id, rem){
+    url = "/employee/" + emp_id.toString()
+
+    fetch(url, {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({'rem' : rem})})
+        .then(response => response.json())
+        .then(data => console.log(data));
+
+    if(rem == true)
+        window.location.href = '/index'
+    else
+        window.location.href = url
 }
