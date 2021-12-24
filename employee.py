@@ -85,6 +85,6 @@ def employee_remove(id):
     db = Connection()
     sub = db.list_direct_subordinates(id)
     if sub != []:
-        return render_template('index.html', info="Pracownika posiada podwładnych. Należy najpierw zmienić przełożonego wszystkim podwładnym.")
+        return render_template('index.html', info="Pracownik posiada podwładnych. Należy najpierw zmienić przełożonego wszystkim podwładnym.")
     else:
         return render_template("edit_form.html", edit_title="REM", emp_id=id)
